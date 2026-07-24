@@ -590,7 +590,7 @@ a {
 
 .about-image img{
     width:100%;
-    max-width:360px;
+    max-width:400px;
     border-radius:20px;
     box-shadow:0 20px 40px rgba(0,0,0,.15);
 }
@@ -629,6 +629,25 @@ a {
     margin-bottom:30px;
 }
 
+}.gold-line{
+    width:70px;
+    height:4px;
+    background:#c9a227;
+    border-radius:10px;
+    margin-bottom:18px;
+}
+.about-image h3{
+    margin-top:22px;
+    margin-bottom:6px;
+    font-size:30px;
+    font-weight:700;
+}
+
+.about-title{
+    color:#777;
+    font-size:17px;
+    letter-spacing:1px;
+    text-transform:uppercase;
 }
 
 
