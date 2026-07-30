@@ -6,7 +6,6 @@ document.addEventListener("DOMContentLoaded", () => {
   const mainNav = document.querySelector(".main-nav");
   const navLinks = document.querySelectorAll(".main-nav a");
   const revealElements = document.querySelectorAll(".reveal");
-  const counters = document.querySelectorAll(".counter");
   const backToTop = document.querySelector(".back-to-top");
   const year = document.getElementById("year");
   const sections = document.querySelectorAll("main section[id]");
@@ -69,15 +68,14 @@ document.addEventListener("DOMContentLoaded", () => {
   const updateHeader = () => {
     if (!header) return;
 
-    if (window.scrollY > 40) {
-      header.classList.add("scrolled");
-    } else {
-      header.classList.remove("scrolled");
-    }
+    header.classList.toggle("scrolled", window.scrollY > 40);
   };
 
   updateHeader();
-  window.addEventListener("scroll", updateHeader, { passive: true });
+
+  window.addEventListener("scroll", updateHeader, {
+    passive: true
+  });
 
   /* =========================================================
      BACK TO TOP BUTTON
@@ -86,18 +84,17 @@ document.addEventListener("DOMContentLoaded", () => {
   const updateBackToTop = () => {
     if (!backToTop) return;
 
-    if (window.scrollY > 500) {
-      backToTop.classList.add("visible");
-    } else {
-      backToTop.classList.remove("visible");
-    }
+    backToTop.classList.toggle("visible", window.scrollY > 500);
   };
 
   updateBackToTop();
-  window.addEventListener("scroll", updateBackToTop, { passive: true });
+
+  window.addEventListener("scroll", updateBackToTop, {
+    passive: true
+  });
 
   /* =========================================================
-     SCROLL REVEAL ANIMATIONS
+     SCROLL REVEAL
   ========================================================= */
 
   if ("IntersectionObserver" in window) {
@@ -111,8 +108,8 @@ document.addEventListener("DOMContentLoaded", () => {
         });
       },
       {
-        threshold: 0.14,
-        rootMargin: "0px 0px -60px 0px",
+        threshold: 0.12,
+        rootMargin: "0px 0px -40px 0px"
       }
     );
 
@@ -126,65 +123,84 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   /* =========================================================
-   ANIMATED COUNTERS
-========================================================= */
+     ANIMATED COUNTERS
+  ========================================================= */
 
-const counters = document.querySelectorAll(".counter");
+  const counterElements = document.querySelectorAll(".counter");
 
-function animateCounter(counter) {
-  const target = Number(counter.getAttribute("data-target"));
+  const animateCounter = (counter) => {
+    if (counter.dataset.animated === "true") return;
 
-  if (!Number.isFinite(target)) {
-    return;
-  }
+    const target = Number(counter.dataset.target);
 
-  let current = 0;
-  const duration = 1200;
-  const startTime = performance.now();
-
-  function updateCounter(currentTime) {
-    const elapsed = currentTime - startTime;
-    const progress = Math.min(elapsed / duration, 1);
-    const easedProgress = 1 - Math.pow(1 - progress, 3);
-
-    current = Math.floor(target * easedProgress);
-    counter.textContent = current;
-
-    if (progress < 1) {
-      requestAnimationFrame(updateCounter);
-    } else {
-      counter.textContent = target;
+    if (!Number.isFinite(target)) {
+      counter.textContent = "0";
+      return;
     }
-  }
 
-  requestAnimationFrame(updateCounter);
-}
+    counter.dataset.animated = "true";
 
-if ("IntersectionObserver" in window) {
-  const counterObserver = new IntersectionObserver(
-    (entries, observer) => {
-      entries.forEach((entry) => {
-        if (!entry.isIntersecting) {
-          return;
+    const duration = 1400;
+    const startTime = performance.now();
+
+    const update = (currentTime) => {
+      const elapsed = currentTime - startTime;
+      const progress = Math.min(elapsed / duration, 1);
+
+      const easedProgress =
+        1 - Math.pow(1 - progress, 3);
+
+      counter.textContent = Math.floor(
+        target * easedProgress
+      );
+
+      if (progress < 1) {
+        requestAnimationFrame(update);
+      } else {
+        counter.textContent = target;
+      }
+    };
+
+    requestAnimationFrame(update);
+  };
+
+  if (counterElements.length > 0) {
+    if ("IntersectionObserver" in window) {
+      const counterObserver = new IntersectionObserver(
+        (entries, observer) => {
+          entries.forEach((entry) => {
+            if (!entry.isIntersecting) return;
+
+            animateCounter(entry.target);
+            observer.unobserve(entry.target);
+          });
+        },
+        {
+          threshold: 0.25,
+          rootMargin: "0px"
         }
+      );
 
-        animateCounter(entry.target);
-        observer.unobserve(entry.target);
+      counterElements.forEach((counter) => {
+        counterObserver.observe(counter);
       });
-    },
-    {
-      threshold: 0.4
+    } else {
+      counterElements.forEach((counter) => {
+        animateCounter(counter);
+      });
     }
-  );
 
-  counters.forEach((counter) => {
-    counterObserver.observe(counter);
-  });
-} else {
-  counters.forEach((counter) => {
-    animateCounter(counter);
-  });
-}
+    /*
+      Fallback in case the observer fails.
+      The counters will still animate after 2 seconds.
+    */
+
+    setTimeout(() => {
+      counterElements.forEach((counter) => {
+        animateCounter(counter);
+      });
+    }, 2000);
+  }
 
   /* =========================================================
      ACTIVE NAVIGATION LINK
@@ -198,8 +214,9 @@ if ("IntersectionObserver" in window) {
     let currentSectionId = "";
 
     sections.forEach((section) => {
-      const sectionTop = section.offsetTop - 160;
-      const sectionBottom = sectionTop + section.offsetHeight;
+      const sectionTop = section.offsetTop - 170;
+      const sectionBottom =
+        sectionTop + section.offsetHeight;
 
       if (
         window.scrollY >= sectionTop &&
@@ -211,20 +228,26 @@ if ("IntersectionObserver" in window) {
 
     navSectionLinks.forEach((link) => {
       const href = link.getAttribute("href");
-      const matchesCurrentSection = href === `#${currentSectionId}`;
 
-      link.classList.toggle("active", matchesCurrentSection);
+      link.classList.toggle(
+        "active",
+        href === `#${currentSectionId}`
+      );
     });
   };
 
   setActiveLink();
-  window.addEventListener("scroll", setActiveLink, { passive: true });
+
+  window.addEventListener("scroll", setActiveLink, {
+    passive: true
+  });
 
   /* =========================================================
-     SMOOTH INTERNAL LINK SCROLLING
+     SMOOTH INTERNAL SCROLLING
   ========================================================= */
 
-  const internalLinks = document.querySelectorAll('a[href^="#"]');
+  const internalLinks =
+    document.querySelectorAll('a[href^="#"]');
 
   internalLinks.forEach((link) => {
     link.addEventListener("click", (event) => {
@@ -232,13 +255,16 @@ if ("IntersectionObserver" in window) {
 
       if (!targetId || targetId === "#") return;
 
-      const targetElement = document.querySelector(targetId);
+      const targetElement =
+        document.querySelector(targetId);
 
       if (!targetElement) return;
 
       event.preventDefault();
 
-      const headerHeight = header ? header.offsetHeight : 0;
+      const headerHeight =
+        header ? header.offsetHeight : 0;
+
       const targetPosition =
         targetElement.getBoundingClientRect().top +
         window.scrollY -
@@ -246,13 +272,13 @@ if ("IntersectionObserver" in window) {
 
       window.scrollTo({
         top: targetPosition,
-        behavior: "smooth",
+        behavior: "smooth"
       });
     });
   });
 
   /* =========================================================
-     HERO CARD MOUSE MOVEMENT
+     HERO CARD MOVEMENT
   ========================================================= */
 
   const heroCard = document.querySelector(".hero-card");
@@ -260,7 +286,9 @@ if ("IntersectionObserver" in window) {
   if (
     heroCard &&
     window.matchMedia("(pointer: fine)").matches &&
-    !window.matchMedia("(prefers-reduced-motion: reduce)").matches
+    !window.matchMedia(
+      "(prefers-reduced-motion: reduce)"
+    ).matches
   ) {
     heroCard.addEventListener("mousemove", (event) => {
       const rect = heroCard.getBoundingClientRect();
@@ -271,8 +299,11 @@ if ("IntersectionObserver" in window) {
       const centerX = rect.width / 2;
       const centerY = rect.height / 2;
 
-      const rotateX = ((mouseY - centerY) / centerY) * -4;
-      const rotateY = ((mouseX - centerX) / centerX) * 4;
+      const rotateX =
+        ((mouseY - centerY) / centerY) * -4;
+
+      const rotateY =
+        ((mouseX - centerX) / centerX) * 4;
 
       heroCard.style.transform =
         `perspective(900px) rotateX(${rotateX}deg) rotateY(${rotateY}deg)`;
@@ -285,7 +316,12 @@ if ("IntersectionObserver" in window) {
   }
 
   /* =========================================================
-     CLOSE MOBILE MENU AFTER SCREEN RESIZE
+     RESIZE HANDLING
   ========================================================= */
 
- 
+  window.addEventListener("resize", () => {
+    if (window.innerWidth > 950) {
+      closeMenu();
+    }
+  });
+});
