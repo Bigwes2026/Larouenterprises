@@ -126,56 +126,65 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   /* =========================================================
-     ANIMATED COUNTERS
-  ========================================================= */
+   ANIMATED COUNTERS
+========================================================= */
 
-  const animateCounter = (counter) => {
-    const target = Number(counter.dataset.target);
+const counters = document.querySelectorAll(".counter");
 
-    if (!Number.isFinite(target)) return;
+function animateCounter(counter) {
+  const target = Number(counter.getAttribute("data-target"));
 
-    let current = 0;
-    const duration = 1200;
-    const startTime = performance.now();
-
-    const updateCounter = (time) => {
-      const progress = Math.min((time - startTime) / duration, 1);
-      const easedProgress = 1 - Math.pow(1 - progress, 3);
-
-      current = Math.floor(target * easedProgress);
-      counter.textContent = String(current);
-
-      if (progress < 1) {
-        requestAnimationFrame(updateCounter);
-      } else {
-        counter.textContent = String(target);
-      }
-    };
-
-    requestAnimationFrame(updateCounter);
-  };
-
-  if ("IntersectionObserver" in window) {
-    const counterObserver = new IntersectionObserver(
-      (entries, observer) => {
-        entries.forEach((entry) => {
-          if (!entry.isIntersecting) return;
-
-          animateCounter(entry.target);
-          observer.unobserve(entry.target);
-        });
-      },
-      {
-        threshold: 0.5,
-      }
-    );
-
-    counters.forEach((counter) => {
-      counterObserver.observe(counter);
-    });
-  } else {
-    counters.forEach(animateCounter);
+  if (!Number.isFinite(target)) {
+    return;
   }
+
+  let current = 0;
+  const duration = 1200;
+  const startTime = performance.now();
+
+  function updateCounter(currentTime) {
+    const elapsed = currentTime - startTime;
+    const progress = Math.min(elapsed / duration, 1);
+    const easedProgress = 1 - Math.pow(1 - progress, 3);
+
+    current = Math.floor(target * easedProgress);
+    counter.textContent = current;
+
+    if (progress < 1) {
+      requestAnimationFrame(updateCounter);
+    } else {
+      counter.textContent = target;
+    }
+  }
+
+  requestAnimationFrame(updateCounter);
+}
+
+if ("IntersectionObserver" in window) {
+  const counterObserver = new IntersectionObserver(
+    (entries, observer) => {
+      entries.forEach((entry) => {
+        if (!entry.isIntersecting) {
+          return;
+        }
+
+        animateCounter(entry.target);
+        observer.unobserve(entry.target);
+      });
+    },
+    {
+      threshold: 0.4
+    }
+  );
+
+  counters.forEach((counter) => {
+    counterObserver.observe(counter);
+  });
+} else {
+  counters.forEach((counter) => {
+    animateCounter(counter);
+  });
+}
 
   /* =========================================================
      ACTIVE NAVIGATION LINK
