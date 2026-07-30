@@ -123,85 +123,98 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   /* =========================================================
-     ANIMATED COUNTERS
-  ========================================================= */
+   ANIMATED COUNTERS
+   Starts after the loading screen disappears
+========================================================= */
 
-  const counterElements = document.querySelectorAll(".counter");
+const counterElements = document.querySelectorAll(".counter");
 
-  const animateCounter = (counter) => {
-    if (counter.dataset.animated === "true") return;
+const runCounterAnimation = (counter) => {
+  const target = Number(counter.dataset.target);
 
-    const target = Number(counter.dataset.target);
-
-    if (!Number.isFinite(target)) {
-      counter.textContent = "0";
-      return;
-    }
-
-    counter.dataset.animated = "true";
-
-    const duration = 1400;
-    const startTime = performance.now();
-
-    const update = (currentTime) => {
-      const elapsed = currentTime - startTime;
-      const progress = Math.min(elapsed / duration, 1);
-
-      const easedProgress =
-        1 - Math.pow(1 - progress, 3);
-
-      counter.textContent = Math.floor(
-        target * easedProgress
-      );
-
-      if (progress < 1) {
-        requestAnimationFrame(update);
-      } else {
-        counter.textContent = target;
-      }
-    };
-
-    requestAnimationFrame(update);
-  };
-
-  if (counterElements.length > 0) {
-    if ("IntersectionObserver" in window) {
-      const counterObserver = new IntersectionObserver(
-        (entries, observer) => {
-          entries.forEach((entry) => {
-            if (!entry.isIntersecting) return;
-
-            animateCounter(entry.target);
-            observer.unobserve(entry.target);
-          });
-        },
-        {
-          threshold: 0.25,
-          rootMargin: "0px"
-        }
-      );
-
-      counterElements.forEach((counter) => {
-        counterObserver.observe(counter);
-      });
-    } else {
-      counterElements.forEach((counter) => {
-        animateCounter(counter);
-      });
-    }
-
-    /*
-      Fallback in case the observer fails.
-      The counters will still animate after 2 seconds.
-    */
-
-    setTimeout(() => {
-      counterElements.forEach((counter) => {
-        animateCounter(counter);
-      });
-    }, 2000);
+  if (!Number.isFinite(target)) {
+    return;
   }
 
+  counter.textContent = "0";
+
+  const duration = 1600;
+  const startTime = performance.now();
+
+  const updateCounter = (currentTime) => {
+    const elapsed = currentTime - startTime;
+    const progress = Math.min(elapsed / duration, 1);
+
+    const easedProgress =
+      1 - Math.pow(1 - progress, 3);
+
+    const currentValue = Math.floor(
+      target * easedProgress
+    );
+
+    counter.textContent = String(currentValue);
+
+    if (progress < 1) {
+      requestAnimationFrame(updateCounter);
+    } else {
+      counter.textContent = String(target);
+    }
+  };
+
+  requestAnimationFrame(updateCounter);
+};
+
+const startCountersWhenVisible = () => {
+  if (!counterElements.length) {
+    return;
+  }
+
+  counterElements.forEach((counter) => {
+    counter.textContent = "0";
+    counter.dataset.animated = "false";
+  });
+
+  if ("IntersectionObserver" in window) {
+    const counterObserver = new IntersectionObserver(
+      (entries, observer) => {
+        entries.forEach((entry) => {
+          if (!entry.isIntersecting) {
+            return;
+          }
+
+          const counter = entry.target;
+
+          if (counter.dataset.animated === "true") {
+            return;
+          }
+
+          counter.dataset.animated = "true";
+          runCounterAnimation(counter);
+          observer.unobserve(counter);
+        });
+      },
+      {
+        threshold: 0.35
+      }
+    );
+
+    counterElements.forEach((counter) => {
+      counterObserver.observe(counter);
+    });
+  } else {
+    counterElements.forEach((counter) => {
+      runCounterAnimation(counter);
+    });
+  }
+};
+
+/*
+  Your CSS loading screen disappears after about 2.4 seconds.
+  Waiting 2.7 seconds prevents the counter animation from
+  running behind the loading screen.
+*/
+
+setTimeout(startCountersWhenVisible, 2700);
   /* =========================================================
      ACTIVE NAVIGATION LINK
   ========================================================= */
