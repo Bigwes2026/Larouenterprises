@@ -279,42 +279,4 @@ document.addEventListener("DOMContentLoaded", () => {
      CLOSE MOBILE MENU AFTER SCREEN RESIZE
   ========================================================= */
 
-  /* =========================================================
-   PRELOADER
-========================================================= */
-
-(function () {
-  const hidePreloader = () => {
-    const preloader = document.getElementById("preloader");
-
-    if (!preloader) {
-      return;
-    }
-
-    preloader.classList.add("hide");
-
-    setTimeout(() => {
-      preloader.remove();
-    }, 900);
-  };
-
-  if (document.readyState === "complete") {
-    setTimeout(hidePreloader, 1600);
-  } else {
-    window.addEventListener(
-      "load",
-      () => {
-        setTimeout(hidePreloader, 1600);
-      },
-      { once: true }
-    );
-  }
-
-  /*
-    Emergency fallback:
-    The loader will always disappear after four seconds,
-    even if another script encounters an error.
-  */
-
-  setTimeout(hidePreloader, 4000);
-})();
+ 
