@@ -2330,3 +2330,137 @@ body.js-enabled .reveal.visible {
 .text-link {
   white-space: nowrap;
 }
+/*=========================
+PRELOADER
+=========================*/
+
+#preloader{
+
+    position:fixed;
+    inset:0;
+
+    background:#080808;
+
+    display:flex;
+    justify-content:center;
+    align-items:center;
+
+    z-index:999999;
+
+    transition:opacity .8s ease,
+               visibility .8s ease;
+
+}
+
+#preloader.hide{
+
+    opacity:0;
+    visibility:hidden;
+
+}
+
+.loader-content{
+
+    text-align:center;
+
+}
+
+.loader-content img{
+
+    width:120px;
+
+    margin-bottom:30px;
+
+    animation:floatLogo 2s ease-in-out infinite;
+
+}
+
+.loader-content h1{
+
+    color:#ffffff;
+
+    font-size:72px;
+
+    font-weight:900;
+
+    letter-spacing:8px;
+
+    margin-bottom:10px;
+
+}
+
+.loader-content p{
+
+    color:#7CC4FF;
+
+    letter-spacing:6px;
+
+    font-size:15px;
+
+    margin-bottom:35px;
+
+}
+
+.loader-line{
+
+    width:260px;
+
+    height:4px;
+
+    background:rgba(255,255,255,.08);
+
+    border-radius:20px;
+
+    overflow:hidden;
+
+}
+
+.loader-line span{
+
+    display:block;
+
+    width:0;
+
+    height:100%;
+
+    background:linear-gradient(
+        90deg,
+        #4DA3FF,
+        #7CC4FF
+    );
+
+    animation:loading 2s ease forwards;
+
+}
+
+@keyframes loading{
+
+    from{
+
+        width:0;
+
+    }
+
+    to{
+
+        width:100%;
+
+    }
+
+}
+
+@keyframes floatLogo{
+
+    0%,100%{
+
+        transform:translateY(0);
+
+    }
+
+    50%{
+
+        transform:translateY(-12px);
+
+    }
+
+}
