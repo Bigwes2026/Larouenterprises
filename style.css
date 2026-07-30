@@ -2463,4 +2463,18 @@ PRELOADER
 
     }
 
+}/* =========================================================
+   PRELOADER EXIT FIX
+========================================================= */
+
+#preloader {
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+}
+
+#preloader.hide {
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
 }
